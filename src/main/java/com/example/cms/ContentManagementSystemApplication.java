@@ -11,4 +11,3 @@ public class ContentManagementSystemApplication {
 	}
 
 }
-//5010da1b-7f4e-40b2-817f-5b88f631c94d
