@@ -33,5 +33,5 @@ public class BlogPost {
 	private PostType postType;
 	private String seoTitle;
 	private String seoDescription;
-	private String[] seoTopic;
+	private String[] seoTopics;
 }

@@ -3,29 +3,29 @@ package com.example.cms.utility;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ResponseStructure {
+public class ResponseStructure<T> {
 
 	private int statuscode;
 	private String message;
-	private Object data;
+	private T data;
 	public int getStatuscode() {
 		return statuscode;
 	}
-	public ResponseStructure setStatuscode(int statuscode) {
+	public ResponseStructure<T> setStatuscode(int statuscode) {
 		this.statuscode = statuscode;
 		return this;
 	}
 	public String getMessage() {
 		return message;
 	}
-	public ResponseStructure setMessage(String message) {
+	public ResponseStructure<T> setMessage(String message) {
 		this.message = message;
 		return this;
 	}
 	public Object getData() {
 		return data;
 	}
-	public ResponseStructure setData(Object data) {
+	public ResponseStructure<T> setData(T data) {
 		this.data = data;
 		return this;
 	}
