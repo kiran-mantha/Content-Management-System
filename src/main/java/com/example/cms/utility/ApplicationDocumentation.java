@@ -17,6 +17,7 @@ public class ApplicationDocumentation {
 		return new OpenAPI().info(info());
 	}
 
+	@Bean
 	private Info info() {
 		return new Info().title("Content-Management-System")
 						 .description("Restful API with basic crud operation")
@@ -24,6 +25,7 @@ public class ApplicationDocumentation {
 						 .contact(contact());
 	}
 
+	@Bean
 	private Contact contact() {
 		return new Contact().name("Kiran")
 							.url("kiran.in")

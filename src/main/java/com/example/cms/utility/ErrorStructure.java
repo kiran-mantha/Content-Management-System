@@ -3,29 +3,29 @@ package com.example.cms.utility;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ErrorStructure {
+public class ErrorStructure<T> {
 
 	private int errorCode;
 	private String errorMessage;
-	private Object rootCause;
+	private T rootCause;
 	public int getErrorCode() {
 		return errorCode;
 	}
-	public ErrorStructure setErrorCode(int errorCode) {
+	public ErrorStructure<T> setErrorCode(int errorCode) {
 		this.errorCode = errorCode;
 		return this;
 	}
 	public String getErrorMessage() {
 		return errorMessage;
 	}
-	public ErrorStructure setErrorMessage(String errorMessage) {
+	public ErrorStructure<T> setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
 		return this;
 	}
 	public Object getRootCause() {
 		return rootCause;
 	}
-	public ErrorStructure setRootCause(Object rootCause) {
+	public ErrorStructure<T> setRootCause(T rootCause) {
 		this.rootCause = rootCause;
 		return this;
 	}

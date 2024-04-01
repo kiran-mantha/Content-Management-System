@@ -1,8 +1,7 @@
-package com.example.cms.dto;
+package com.example.cms.requestdto;
 
 import com.example.cms.model.User;
 
-import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -17,6 +16,5 @@ public class BlogRequest {
 	private String title;
 	private String[] topics;
 	private String summary;
-	@ManyToOne
 	private User user;
 }
