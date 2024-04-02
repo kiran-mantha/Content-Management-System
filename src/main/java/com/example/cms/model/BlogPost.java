@@ -62,4 +62,5 @@ public class BlogPost {
 	
 	@ManyToOne
 	private Blog blog;
+	
 }
