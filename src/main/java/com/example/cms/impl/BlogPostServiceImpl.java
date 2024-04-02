@@ -119,15 +119,24 @@ public class BlogPostServiceImpl implements BlogPostService {
 	public ResponseEntity<ResponseStructure<PublishResponse>> publishBlogPost(int postId,
 			PublishRequest publishRequest) {
 		
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		return blogPostRepo.findById(postId).map(post -> {
 			
-			post.setPostType(PostType.PUBLISHED);
-			Publish publish = mapToPublish(publishRequest);
-			publish.setBlogPost(post);
+			return userRepo.findByEmail(username).map(user -> {
+				
+				if(!post.getBlog().getUser().getEmail().equals(username) && !panelRepo.existsByPanelIdAndContributors(post.getBlog().getPanel().getPanelId(), user))
+					throw new UnAuthorizedException("The user do not have access to modify the post");
+				
+				post.setPostType(PostType.PUBLISHED);
+				Publish publish = mapToPublish(publishRequest);
+				publish.setBlogPost(post);
+				
+				return ResponseEntity.ok(publishStructure.setStatuscode(HttpStatus.OK.value())
+														  .setMessage("Publish is created Successfully")
+														  .setData(mapToPublishResponse(publishRepo.save(publish))));
+				
+			}).orElseThrow(() -> new UnAuthorizedException("You do not have the access to create this blog"));
 			
-			return ResponseEntity.ok(publishStructure.setStatuscode(HttpStatus.OK.value())
-													  .setMessage("Publish is created Successfully")
-													  .setData(mapToPublishResponse(publishRepo.save(publish))));
 		}).orElseThrow(() -> new BlogPostNotFoundByIdException("The blog post id you mentioned is no where to be found"));
 	}
 	
