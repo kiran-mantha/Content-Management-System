@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.cms.requestdto.BlogPostRequest;
+import com.example.cms.requestdto.PublishRequest;
 import com.example.cms.responsedto.BlogPostResponse;
+import com.example.cms.responsedto.PublishResponse;
 import com.example.cms.service.BlogPostService;
 import com.example.cms.utility.ResponseStructure;
 
@@ -34,5 +36,10 @@ public class BlogPostController {
 	@DeleteMapping("/blog-posts/{postId}")
 	public ResponseEntity<ResponseStructure<BlogPostResponse>> deleteBlogPost(@PathVariable int postId) {
 		return blogPostService.deleteBlogPost(postId);
+	}
+	
+	@PostMapping("/blog-posts/{postId}/publishes")
+	public ResponseEntity<ResponseStructure<PublishResponse>> publishBlogPost(@PathVariable int postId, @RequestBody PublishRequest publishRequest) {
+		return blogPostService.publishBlogPost(postId, publishRequest);
 	}
 }

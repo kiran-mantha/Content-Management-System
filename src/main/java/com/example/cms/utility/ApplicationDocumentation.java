@@ -17,16 +17,14 @@ public class ApplicationDocumentation {
 		return new OpenAPI().info(info());
 	}
 
-	@Bean
-	private Info info() {
+	Info info() {
 		return new Info().title("Content-Management-System")
 						 .description("Restful API with basic crud operation")
 						 .version("v1")
 						 .contact(contact());
 	}
 
-	@Bean
-	private Contact contact() {
+	Contact contact() {
 		return new Contact().name("Kiran")
 							.url("kiran.in")
 							.email("kiranmantha7143@gmail.com");
