@@ -1,7 +1,5 @@
 package com.example.cms.responsedto;
 
-import java.time.LocalDateTime;
-
 import com.example.cms.enums.PostType;
 import com.example.cms.model.Blog;
 
@@ -24,8 +22,6 @@ public class BlogPostResponse {
 	private PostType postType;
 	private String summary;
 	private Blog blog;
-	private LocalDateTime createdAt;
-	private String createdBy;
-	private String lastModifiedBy;
-	private LocalDateTime lastModifiedAt;
+
+	private PublishResponse publishResponse;
 }

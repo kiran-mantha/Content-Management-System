@@ -17,7 +17,6 @@ import com.example.cms.model.Publish;
 import com.example.cms.repository.BlogPostRepository;
 import com.example.cms.repository.BlogRepository;
 import com.example.cms.repository.ContributionPanelRepository;
-import com.example.cms.repository.PublishRepository;
 import com.example.cms.repository.UserRepository;
 import com.example.cms.requestdto.BlogPostRequest;
 import com.example.cms.requestdto.PublishRequest;
@@ -36,9 +35,7 @@ public class BlogPostServiceImpl implements BlogPostService {
 	private BlogRepository blogRepo;
 	private UserRepository userRepo;
 	private ContributionPanelRepository panelRepo;
-	private PublishRepository publishRepo;
 	private ResponseStructure<BlogPostResponse> responseStructure;
-	private ResponseStructure<PublishResponse> publishStructure;
 
 	@Override
 	public ResponseEntity<ResponseStructure<BlogPostResponse>> createPost(int blogId, BlogPostRequest blogRequest) {
@@ -116,7 +113,7 @@ public class BlogPostServiceImpl implements BlogPostService {
 	}
 	
 	@Override
-	public ResponseEntity<ResponseStructure<PublishResponse>> publishBlogPost(int postId,
+	public ResponseEntity<ResponseStructure<BlogPostResponse>> publishBlogPost(int postId,
 			PublishRequest publishRequest) {
 		
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -128,31 +125,61 @@ public class BlogPostServiceImpl implements BlogPostService {
 					throw new UnAuthorizedException("The user do not have access to modify the post");
 				
 				post.setPostType(PostType.PUBLISHED);
-				Publish publish = mapToPublish(publishRequest);
-				publish.setBlogPost(post);
 				
-				return ResponseEntity.ok(publishStructure.setStatuscode(HttpStatus.OK.value())
+				return ResponseEntity.ok(responseStructure.setStatuscode(HttpStatus.OK.value())
 														  .setMessage("Publish is created Successfully")
-														  .setData(mapToPublishResponse(publishRepo.save(publish))));
+														  .setData(mapToPostResponse(blogPostRepo.save(post))));
 				
 			}).orElseThrow(() -> new UnAuthorizedException("You do not have the access to create this blog"));
 			
 		}).orElseThrow(() -> new BlogPostNotFoundByIdException("The blog post id you mentioned is no where to be found"));
 	}
 	
+	@Override
+	public ResponseEntity<ResponseStructure<BlogPostResponse>> unpublishBlogPost(int postId) {
+		
+		return blogPostRepo.findById(postId).map(post -> {
+			post.setPostType(PostType.DRAFT);
+			
+			return ResponseEntity.ok(responseStructure.setStatuscode(HttpStatus.OK.value())
+													  .setMessage("The Blog Post is unpublished")
+													  .setData(mapToPostResponse(blogPostRepo.save(post))));
+		}).orElseThrow(() -> new BlogPostNotFoundByIdException("The blog is not found by the given Id: "+postId));
+	}	
+	
+	@Override
+	public ResponseEntity<ResponseStructure<BlogPostResponse>> findBlogPostById(int postId) {
+		
+		return blogPostRepo.findById(postId).map(post -> {
+				
+				return ResponseEntity.ok(responseStructure.setStatuscode(HttpStatus.OK.value())
+														  .setMessage("Blog Post Found By given Id")
+														  .setData(mapToPostResponse(post)));
+				
+		}).orElseThrow(() -> new BlogPostNotFoundByIdException("The blog post you are looking for is not available"));
+	}
+	
+	@Override
+	public ResponseEntity<ResponseStructure<BlogPostResponse>> findBlogPostByIdByPostType(int postId) {
+		
+		return blogPostRepo.findByPostIdAndPostType(postId, PostType.PUBLISHED).map(post -> {
+			
+			return ResponseEntity.ok(responseStructure.setStatuscode(HttpStatus.OK.value())
+													  .setMessage("The blog post is found")
+													  .setData(mapToPostResponse(post)));
+			
+		}).orElseThrow(() -> new BlogPostNotFoundByIdException("The blog post is not found by the given Id: "+postId));
+	}
+
+	
 	private BlogPostResponse mapToPostResponse(BlogPost post) {
 		
-		return BlogPostResponse.builder().postId(post.getPostId())
-										 .title(post.getTitle())
-										 .subTitle(post.getSubTitle())
-										 .postType(post.getPostType())
-										 .summary(post.getSummary())
-										 .createdAt(post.getCreatedAt())
-										 .createdBy(post.getCreatedBy())
-										 .lastModifiedAt(post.getLastModifiedAt())
-										 .lastModifiedBy(post.getLastModifiedBy())
-										 .blog(post.getBlog())
-							   .build();
+		BlogPostResponse postResponse = new BlogPostResponse(post.getPostId(), post.getTitle(),
+				post.getSubTitle(), post.getPostType(), post.getSummary(), post.getBlog(), null);
+
+		if(post.getPublish() != null)	postResponse.setPublishResponse(mapToPublishResponse(post.getPublish()));
+		
+		return postResponse;
 	}
 	
 	private BlogPost mapToBlogPostEntity(BlogPostRequest blogRequest) {
@@ -161,15 +188,6 @@ public class BlogPostServiceImpl implements BlogPostService {
 								 .subTitle(blogRequest.getSubTitle())
 								 .summary(blogRequest.getSummary())
 					   .build();
-
-	}
-	
-	private Publish mapToPublish(PublishRequest publishReq) {
-		
-		return Publish.builder().seoTitle(publishReq.getSeoTitle())
-								.seoDescription(publishReq.getSeoDescription())
-								.seoTopics(publishReq.getSeoTopics())
-					  .build();
 	}
 	
 	private PublishResponse mapToPublishResponse(Publish publish) {
