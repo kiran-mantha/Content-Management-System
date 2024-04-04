@@ -40,7 +40,7 @@ public class BlogPostController {
 	
 	@PostMapping("/blog-posts/{postId}/publishes")
 	public ResponseEntity<ResponseStructure<BlogPostResponse>> publishBlogPost(@PathVariable int postId, @RequestBody PublishRequest publishRequest) {
-		return blogPostService.publishBlogPost(postId, publishRequest);
+		return blogPostService.publish(postId, publishRequest);
 	}
 	
 	@PutMapping("/unpublish/blog-posts/{postId}")

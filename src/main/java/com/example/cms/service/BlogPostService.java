@@ -15,7 +15,7 @@ public interface BlogPostService {
 
 	ResponseEntity<ResponseStructure<BlogPostResponse>> deleteBlogPost(int postId);
 
-	ResponseEntity<ResponseStructure<BlogPostResponse>> publishBlogPost(int postId, PublishRequest publishRequest);
+	ResponseEntity<ResponseStructure<BlogPostResponse>> publish(int postId, PublishRequest publishRequest);
 
 	ResponseEntity<ResponseStructure<BlogPostResponse>> findBlogPostById(int postId);
 

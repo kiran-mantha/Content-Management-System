@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.cms.repository.UserRepository;
 
-@Service
+//@Service
 public class CustomUserDetailsService implements UserDetailsService {
 
 	private UserRepository userRepo;

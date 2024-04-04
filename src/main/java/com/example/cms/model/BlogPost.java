@@ -64,6 +64,6 @@ public class BlogPost {
 	@ManyToOne
 	private Blog blog;
 	
-	@OneToOne
+	@OneToOne(mappedBy = "blogPost")
 	private Publish publish;
 }

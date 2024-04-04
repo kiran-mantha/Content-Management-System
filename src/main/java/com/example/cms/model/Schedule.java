@@ -1,31 +1,27 @@
 package com.example.cms.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class Publish {
+@NoArgsConstructor
+@Entity
+public class Schedule {
 
 	@Id
-	private int publishId;
-	private String seoTitle;
-	private String seoDescription;
-	private String[] seoTopics;
-	
-	@OneToOne
-	private BlogPost blogPost;
-	
-	@OneToOne
-	private Schedule schedule;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int scheduleId;
+	private LocalDateTime dateTime;
 }

@@ -1,5 +1,7 @@
 package com.example.cms.impl;
 
+import java.time.LocalDateTime;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -9,17 +11,23 @@ import org.springframework.stereotype.Service;
 import com.example.cms.enums.PostType;
 import com.example.cms.exception.BlogNotFoundByIdException;
 import com.example.cms.exception.BlogPostNotFoundByIdException;
+import com.example.cms.exception.ScheduleNotFoundException;
+import com.example.cms.exception.ScheduledTimeExpiredException;
 import com.example.cms.exception.UnAuthorizedException;
 import com.example.cms.exception.UserNotFoundByIdException;
 import com.example.cms.model.Blog;
 import com.example.cms.model.BlogPost;
 import com.example.cms.model.Publish;
+import com.example.cms.model.Schedule;
 import com.example.cms.repository.BlogPostRepository;
 import com.example.cms.repository.BlogRepository;
 import com.example.cms.repository.ContributionPanelRepository;
+import com.example.cms.repository.PublishRepository;
+import com.example.cms.repository.ScheduleRepository;
 import com.example.cms.repository.UserRepository;
 import com.example.cms.requestdto.BlogPostRequest;
 import com.example.cms.requestdto.PublishRequest;
+import com.example.cms.requestdto.ScheduleRequest;
 import com.example.cms.responsedto.BlogPostResponse;
 import com.example.cms.responsedto.PublishResponse;
 import com.example.cms.service.BlogPostService;
@@ -35,6 +43,8 @@ public class BlogPostServiceImpl implements BlogPostService {
 	private BlogRepository blogRepo;
 	private UserRepository userRepo;
 	private ContributionPanelRepository panelRepo;
+	private ScheduleRepository scheduleRepo;
+	private PublishRepository publishRepo;
 	private ResponseStructure<BlogPostResponse> responseStructure;
 
 	@Override
@@ -98,6 +108,11 @@ public class BlogPostServiceImpl implements BlogPostService {
 				
 				blogPostRepo.delete(post);
 				
+				Publish publish = post.getPublish();
+				publishRepo.delete(publish);
+				
+				if(publish.getSchedule()!=null)    scheduleRepo.delete(publish.getSchedule());
+				
 				Blog blog = blogRepo.findById(post.getBlog().getBlogId()).get();
 				
 				blog.getPosts().remove(post);
@@ -113,7 +128,7 @@ public class BlogPostServiceImpl implements BlogPostService {
 	}
 	
 	@Override
-	public ResponseEntity<ResponseStructure<BlogPostResponse>> publishBlogPost(int postId,
+	public ResponseEntity<ResponseStructure<BlogPostResponse>> publish(int postId,
 			PublishRequest publishRequest) {
 		
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -124,7 +139,33 @@ public class BlogPostServiceImpl implements BlogPostService {
 				if(!post.getBlog().getUser().getEmail().equals(username) && !panelRepo.existsByPanelIdAndContributors(post.getBlog().getPanel().getPanelId(), user))
 					throw new UnAuthorizedException("The user do not have access to modify the post");
 				
-				post.setPostType(PostType.PUBLISHED);
+				Publish publish = null;
+				Schedule schedule = post.getPublish().getSchedule();
+				
+				if(post.getPublish()!=null) {
+					if(publishRequest.getSchedule()==null)
+						throw new ScheduleNotFoundException("There is no schedule present");
+					if(!publishRequest.getSchedule().getDateTime().isAfter(LocalDateTime.now()))
+						throw new ScheduledTimeExpiredException("The published time is already expired");
+					publish = mapToPublishEntity(publishRequest, post.getPublish());
+				}
+				else
+					publish = mapToPublishEntity(publishRequest, new Publish());
+				
+				schedule.setDateTime(publishRequest.getSchedule().getDateTime());
+				if(publishRequest.getSchedule()!=null)  {
+					publish.setSchedule(scheduleRepo.save(schedule));
+					post.setPostType(PostType.PUBLISHED);
+				}
+				else 
+					post.setPostType(PostType.SCHEDULED);
+				
+				publish.setBlogPost(post);
+				
+				publishRepo.save(publish);
+				
+				schedule.setDateTime(publishRequest.getSchedule().getDateTime());
+				scheduleRepo.save(schedule);
 				
 				return ResponseEntity.ok(responseStructure.setStatuscode(HttpStatus.OK.value())
 														  .setMessage("Publish is created Successfully")
@@ -135,6 +176,8 @@ public class BlogPostServiceImpl implements BlogPostService {
 		}).orElseThrow(() -> new BlogPostNotFoundByIdException("The blog post id you mentioned is no where to be found"));
 	}
 	
+	
+
 	@Override
 	public ResponseEntity<ResponseStructure<BlogPostResponse>> unpublishBlogPost(int postId) {
 		
@@ -199,4 +242,20 @@ public class BlogPostServiceImpl implements BlogPostService {
 							  .build();
 	}
 
+	private Publish mapToPublishEntity(PublishRequest publishRequest, Publish publish) {
+		
+		publish.setSeoTitle(publishRequest.getSeoTitle());
+		publish.setSeoDescription(publishRequest.getSeoDescription());
+		publish.setSeoTopics(publishRequest.getSeoTopics());
+		publish.setSchedule(mapToScheduleEntity(publishRequest.getSchedule(), new Schedule()));
+		
+		return publish;
+	}
+	
+	private Schedule mapToScheduleEntity(ScheduleRequest scheduleReq, Schedule schedule) {
+		
+		schedule.setDateTime(scheduleReq.getDateTime());
+		
+		return schedule;
+	}
 }
